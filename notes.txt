@@ -7,3 +7,4 @@ CDC
 -Prensentation entreprise (voir boris + mettre à jour )
 -Etat actuelle (relation orhtologies, annotations )
 -mission (nommées grâce au relation d'orthologie )  ( Difficultés anticipé pk pas  comme temps d'execution tres long )
+(Choix de prod argumentés langugage, ide )
