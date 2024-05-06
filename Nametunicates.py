@@ -46,8 +46,8 @@ tunlist=list(set(tunlist))      # To get only unique values
 if lim!=0 :
     tunlist=tunlist[:lim]
 if check=='Y': 
-    print(check)
-    print(f'Estimated time in min : {len(tunlist)/100/60*8:.6f}')
+    #print(check)
+    print(f'Estimated time in min : {len(tunlist)*10/100/60:.6f}')
     proced=''
     while proced!='Y' and proced !='n': 
         proced=input('Do you still want to proceed?[Y/n]')
