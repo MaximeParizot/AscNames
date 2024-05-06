@@ -72,9 +72,27 @@ for g in tunlist :
 #define a fonction for more visibility : 
 # take on speccies and assemblage number inarguments and return a dic with info find in Enembl
 def formatout(espece,assembl): 
-    commande='grep '+assembl+' Ensembl/'+espece+'.csv'
-    r=subprocess.check_output(commande.split(' '))
-    r=r.decode().split("\n")[:-1]   # dernière element à enlever car toujours un espaces blanc 
+    #Resolving the chicken issue , dataset is different so here is a specific parser
+    ##
+    if espece=='Ggal': 
+        commande='grep '+assembl+' Ensembl/'+espece+'.gff3'
+        res=subprocess.check_output(commande.split(' ')).decode().split("\n")[:-1]
+        r=[]
+        for line in res : 
+            if line.split("ID=")[1].split(':')[0]=='gene': 
+                #print(line)
+                l=line.split("ID=gene:")[1].split(';')[0]
+                l=l+','+line.split("ID=gene:")[1].split(';')[0]+'.'+line.split("version=")[1].split(';')[0]
+                try : 
+                    l=l+','+line.split("Name=")[1].split(';')[0]+','
+                except IndexError: 
+                    l=l+',,'
+                r.append(l)
+    ## End of specific parser 
+    else : 
+        commande='grep '+assembl+' Ensembl/'+espece+'.csv'
+        r=subprocess.check_output(commande.split(' '))
+        r=r.decode().split("\n")[:-1]   # dernière element à enlever car toujours un espaces blanc 
     dic={} 
     for res in r : 
         if res.split(',')[0] in dic.keys(): 
@@ -97,8 +115,6 @@ def formatout(espece,assembl):
             sousdic[res.split(',')[2]]=syn
         dic[assembl]=sousdic
     return dic 
-
-
 
 with open(out+'_human.txt','w') as f, open(out+'_vertnh.txt','w') as vertf : 
     for g in tunlist : 
