@@ -54,6 +54,7 @@ if check=='Y':
     if proced=='n': 
         exit()
 
+tunlist=['Cirobu|KH.C4.53']
 print('Proceding...')
 
 #Then a dictionnary of relationships they got : 
@@ -62,9 +63,14 @@ dic={}
 for g in tunlist : 
     commande='grep '+g.split('|')[1]+' '+file
     res=subprocess.check_output(commande.split(' '))
-    l=res.decode().replace("\n",' ').split(' ')[:-1]   # Last element is a '' so let's remove it 
+    res=res.decode().split("\n")[:-1]  # Last element is a '' so let's remove it 
+    l=[]
+    for rel in res : 
+        if rel.split(' ')[0]==g :
+                l.append(rel.split(' ')[1])
+        if rel.split(' ')[1]==g: 
+            l.append(rel.split(' ')[0])
     l=list(set(l))
-    l.remove(g)    # Remove also the gene himself 
     dic[g]=l
 #print(dic)  
 
