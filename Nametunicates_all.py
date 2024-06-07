@@ -2,6 +2,7 @@ import argparse
 import os 
 import subprocess
 
+#Reading arguments 
 parser=argparse.ArgumentParser()
 parser.add_argument("-f","--file",help="OrthologieRelationships file ",type=str,required=True)
 parser.add_argument("-outf","--outfile",help="Desired name for the new files ",type=str,required=True)
@@ -13,11 +14,12 @@ out=args.outfile
 lim=args.limite
 check=args.checktime
 
-tun=['Phmamm','Phfumi','Cisavi','Cirobu','Moocci','Moocul','Mooccu','Boschl','Boleac','Haaura','Harore']
+tun=['Phmamm','Phfumi','Cisavi','Cirobu','Moocci','Moocul','Mooccu','Boschl','Boleac','Haaura','Harore','Coinfl','Stclav']
 vert=['Cmil','Lcha','Hsap','Mmus','Ggal','Psin']
-outgroupt=['Spur','Apla','Bbel','Blan']
+outgroupt=['Spur','Apla','Bbel','Blan','Ajap','Pmin']
 
 #os.chdir('OrthologyRelationships')
+
 #Check the file formatting
 with open (file) as f : 
     try : 
@@ -54,7 +56,7 @@ if check=='Y':
     if proced=='n': 
         exit()
 
-tunlist=['Cirobu|KH.C4.53']
+
 print('Proceding...')
 
 #Then a dictionnary of relationships they got : 
@@ -98,7 +100,7 @@ def formatout(espece,assembl):
     else : 
         commande='grep '+assembl+' Ensembl/'+espece+'.csv'
         r=subprocess.check_output(commande.split(' '))
-        r=r.decode().split("\n")[:-1]   # dernière element à enlever car toujours un espaces blanc 
+        r=r.decode().split("\n")[:-1]   #Last element to remove 
     dic={} 
     for res in r : 
         if res.split(',')[0] in dic.keys(): 
