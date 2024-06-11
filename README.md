@@ -50,3 +50,6 @@ To get statistics in a file the script Stats.py can also be executed :
 python3 Stats.py -f [filename]
 
 Stats can be configured (see the arguements help and graph of Stats) 
+
+To add a species of interest there is three list at the beginning of the Nametunicates_all.py file (line 17-18-19)
+just add the species ID as it's found in your file in the right list. 
