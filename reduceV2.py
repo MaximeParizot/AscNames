@@ -8,11 +8,8 @@ parser.add_argument("-f","--file",help="OrthologyRelationships file ",type=str,r
 args=parser.parse_args()
 file=args.file
 
-#Define the hierarchy order
-Ordervert=['Hsap','Mmus','Psin','Ggal','Lcha','Cmil']
-
 #fl is the number of same forst letter needed to be considered as the same name 
-fl=3
+fl=2
 
 for f in os.listdir('Named/'): 
     os.remove('Named/'+f)
@@ -27,6 +24,8 @@ def grep(str,file):
 
 #Apply the hierarchy to the file
 def hierV2(file): 
+    #Define the hierarchy order
+    Ordervert=['Hsap','Mmus','Psin','Ggal','Lcha','Cmil']
     with open(file) as f, open('Outputs/hierV2_'+file.split('/')[len(file.split('/'))-1],'w') as hier: 
         #initialize
         lines=f.readlines()
@@ -136,7 +135,7 @@ def get_difname(file):
     f.close()
     return difnames
 
-#Fuction to to search a similar string in a list 
+#Fuction to search a similar string in a list 
 def intabis(str,tab): 
     #first remove string that are not a name 
     try : 
@@ -392,7 +391,7 @@ def tintt(t,tt):
 
 #Compute the numbe of differente case(=Same ortologous)
 def get_nb_case(file): 
-    with open(file) as f,open('Outputs/diffCase_'+file.split('/')[len(file.split('/'))-1],'w') as dif,open('Tocomplex.txt','w') as tc:
+    with open(file) as f,open('Outputs/diffCase_'+file.split('/')[len(file.split('/'))-1],'w') as dif:
         #Initialize
         lines=f.readlines()
         current=''
@@ -403,7 +402,6 @@ def get_nb_case(file):
             vertg=line.split(' ')[1]
             #For each line we look a the tunicate genes, if it's a new one, we look at the relationships of the previous one
             if ascg!=current : 
-                tc.write(ascg)
                 #Check if the naming case have already been seen or not 
                 if not(tintt(current_name,cases)) : 
                     cases.append(current_name)
@@ -421,6 +419,80 @@ def get_nb_case(file):
                 dif.write(current+' '+g.replace('\n','')+'\n')
         return len(cases)
 
+#Check if a list of list contain a list with same elements than a list 
+def tinttbis(t,tt): 
+    #Make sure to not add an empty list in the tab
+    if t==[]: 
+        return -1
+    for i in range(0,len(tt)): 
+        if same_elem(t,tt[i]): 
+            return i
+    return -1
+
+
+#Show the differents name found for the to complexe cases so the user can choose a name if he wants 
+def propose(nbcases): 
+    with open('Outputs/More2_Nosyn_Diffnames_hierV2_LEGROS_all.txt') as m2, open('Named/Cho.txt','w') as lc,open('Tocomplex.txt','w') as tc:
+        #Initialize
+        bbb=1
+        passall=False
+        current=''
+        currentnames=[]
+        cases=[]
+        namedcases={}
+        for line in m2.readlines():
+                ascg=line.split(' ')[0] 
+                vertg=line.split(' ')[1]
+                #For each line we look a the tunicate genes, if it's a new one, we look at the relationships of the previous one
+                if ascg!=current : 
+                   #Check if the naming case have already been seen or not 
+                    case=tinttbis(currentnames,cases)
+                    if case==-1 : 
+                        if passall or current=='': 
+                                name='-'
+                        else : 
+                            cases.append(currentnames)
+                            print('\n')
+                            print(str(bbb)+' of '+str(nbcases))
+                            bbb+=1
+                            print('Names found : ')
+                            print(list(set(currentnames)))
+                            #If it's a new case show the users all the names found and let him write the name he want 
+                            name=input('Choose a name for the case upside (- to name later, -exit to name everything later):')
+                            #if - enter go to next , if -exit enter stop the propositions 
+                            if name=='-exit': 
+                                passall=True
+                                name='-'
+                            namedcases[len(cases)-1]=name
+                    else : 
+                        name=namedcases[case]
+                    #If a name was given wrote it in the Named directory so name correction will be apply later 
+                    if name!='-': 
+                        lc.write(current+' NameFound :'+name+'\n')
+                    else : 
+                        tc.write(ascg+'\n')
+                    current=ascg
+                    currentnames=[]
+                if vertg.split('Name::')[1].split(';')[0]!='notFound\n' and vertg.split('Name::')[1].split(';')[0]!='':
+                    currentnames.append(vertg.split('Name::')[1].split(';')[0])
+        #And still don't forget the last one 
+        if passall : 
+            name='-'
+        else : 
+            case=tinttbis(currentnames,cases)
+            if case==-1 and current!='': 
+                cases.append(currentnames)
+                print('Names found : ')
+                print(list(set(currentnames)))
+                name=input('Choose how to name the case upside (- to name later,-exit to name everything later):')
+                namedcases[currentnames]=name
+            else : 
+                name=namedcases[case]
+        if name!='-': 
+            lc.write(current+' NameFound :'+name+'\n')
+        else : 
+            tc.write(ascg+'\n')
+
 #Apply the function wrote before 
 print('Proceding...')
 hierV2(file)
@@ -431,5 +503,7 @@ get_syn('Outputs/Diffnames_hierV2_'+file.split('/')[len(file.split('/'))-1])
 print('syn done ')
 get_more2('Outputs/Nosyn_Diffnames_hierV2_'+file.split('/')[len(file.split('/'))-1])
 print('more2 done ')
-print('Number of cases left : '+str(get_nb_case('Outputs/More2_Nosyn_Diffnames_hierV2_'+file.split('/')[len(file.split('/'))-1])))
+nbcases=get_nb_case('Outputs/More2_Nosyn_Diffnames_hierV2_'+file.split('/')[len(file.split('/'))-1])
+print('Nombre de cas restants : '+str(nbcases))
+propose(nbcases)
 print('End')

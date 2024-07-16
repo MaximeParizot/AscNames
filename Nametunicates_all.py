@@ -14,11 +14,10 @@ out=args.outfile
 lim=args.limite
 check=args.checktime
 
+#Define groups 
 tun=['Phmamm','Phfumi','Cisavi','Cirobu','Moocci','Moocul','Mooccu','Boschl','Boleac','Haaura','Harore','Coinfl','Stclav']
 vert=['Cmil','Lcha','Hsap','Mmus','Ggal','Psin']
 outgroupt=['Spur','Apla','Bbel','Blan','Ajap','Pmin']
-
-#os.chdir('OrthologyRelationships')
 
 #Check the file formatting
 with open (file) as f : 
@@ -34,7 +33,7 @@ with open (file) as f :
         print(e.args[1])
     f.close()
 
- # First build a list of tunicates genes in the file 
+# First build a list of tunicates genes in the file 
 tunlist=[]
 with open (file) as f : 
         lines= f.readlines()
@@ -71,7 +70,7 @@ for g in tunlist :
                 l.append(rel.split(' ')[1])
         if rel.split(' ')[1]==g: 
             l.append(rel.split(' ')[0])
-    l=list(set(l))
+    l=list(set(l)) # equivalent to l=unique(l)
     dic[g]=l
 #print(dic)  
 
@@ -96,39 +95,36 @@ def formatout(espece,assembl):
                     l=l+',,'
                 r.append(l)
     ## End of specific parser 
+    # Search for names with the id of the vertebrate gene and build a dic with the result 
     else : 
         commande='grep '+assembl+' Ensembl/'+espece+'.csv'
         r=subprocess.check_output(commande.split(' '))
         r=r.decode().split("\n")[:-1]   #Last element to remove 
     dic={} 
-    for res in r : 
-        if res.split(',')[0] in dic.keys(): 
-            if res.split(',')[3]=='': 
-                new=['None']
-            else : 
-                new=[res.split(',')[3]]
 
-            if '.'+res.split(',')[1].split('.')[1] in sousdic[res.split(',')[2]].keys():
-                 sousdic[res.split(',')[2]]['.'+res.split(',')[1].split('.')[1]].append(new[0])
-            else : 
-                sousdic[res.split(',')[2]]['.'+res.split(',')[1].split('.')[1]]=new
+    for res in r : 
+        sousdic={}
+        syn={}
+        # For each name found look at the synonyms
+        if res.split(',')[3]=='': 
+            #add 'None' if there is no synonyms 
+            syn['.'+res.split(',')[1].split('.')[1]]=['None']
         else : 
-            sousdic={}
-            syn={}
-            if res.split(',')[3]=='': 
-                syn['.'+res.split(',')[1].split('.')[1]]=['None']
-            else : 
-                syn['.'+res.split(',')[1].split('.')[1]]=[res.split(',')[3]]
-            sousdic[res.split(',')[2]]=syn
+            syn['.'+res.split(',')[1].split('.')[1]]=[res.split(',')[3]]
+        sousdic[res.split(',')[2]]=syn
         dic[assembl]=sousdic
     return dic 
 
+#Create the new file and write the tunicate-vertebrate relation with the name and synonyms 
 with open(out+'_all.txt','w') as vertf : 
+    #for each tunicate genes models with at least one relationship with vertebrate
     for g in tunlist : 
         res=dic[g]
         for rel in res : 
+            #write all the relation 
             if rel.split('|')[0] in vert:
                 vertf.write(g+' '+rel)
+                #and if name or synonymes are found for the vertebrate genes of the relation , write them 
                 try : 
                     res=formatout(rel.split('|')[0],rel.split('|')[1].split('.')[0])[rel.split('|')[1].split('.')[0]]
                     for name in res.keys(): 
@@ -138,6 +134,7 @@ with open(out+'_all.txt','w') as vertf :
                               for syn in res[name][synid]: 
                                   vertf.write('::'+syn )
                     vertf.write("\n")
+                #if the vertebrate gene is not found in the Ensembl database write notFound as name and show a warning 
                 except subprocess.CalledProcessError :
                     vertf.write('_Name::notFound'+"\n") 
                     print('Warning '+rel.split('|')[1].split('.')[0]+' not found in '+rel.split('|')[0])

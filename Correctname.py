@@ -2,20 +2,19 @@ import subprocess
 import os 
 import argparse 
 
+#Reading arguments 
 parser=argparse.ArgumentParser()
 parser.add_argument("-d","--dir",help="directory of Named file ",type=str,required=True)
 args=parser.parse_args()
 dir=args.dir
 
+#Fuction to find and return occurence of a string 
 def grep(str,file): 
     commande='grep|'+str.strip()+'|'+file
     #print(commande.split('|'))
     res=subprocess.check_output(commande.split('|'))
     return res.decode().split("\n")[:-1]   # last element to remove cause it's a white space 
 
-
-Ordervert=['Cmil','Lcha','Hsap','Mmus','Ggal','Psin']
-tun=['Phmamm','Phfumi','Cisavi','Cirobu','Moocci','Moocul','Mooccu','Boschl','Boleac','Haaura','Harore','Coinfl','Stclav']
 
 #Convert a string into a tab where folliwing numbers are together 
 def strtotab(s): 
@@ -41,11 +40,13 @@ def strtotab(s):
 
 #Fonction for reduce the suffixe
 def reduce_suf(rad,suff,cpt): 
-    vert=[i for i in Ordervert]
+    vert=['Hsap','Mmus','Psin','Ggal','Lcha','Cmil']
     #First find all the name with the same radical within the same species
     while vert!=[]: 
+        #try the first vertebrate of the list , if not remove the first and look at the new first one 
         try : 
             namelist=list(set([i.split(',')[2] for i in grep(rad,'Ensembl/'+vert[0]+'.csv')]))
+            #If name is found in human , also look at the mouse ones 
             if vert[0]=='Hsap' : 
                 try :
                     namelist+=list(set([i.split(',')[2] for i in grep(rad,'Ensembl/Mmus.csv')]))
@@ -55,12 +56,13 @@ def reduce_suf(rad,suff,cpt):
             vert=[]
         except subprocess.CalledProcessError :
             vert.remove(vert[0])
-    #Then 
+    #Then try to reduce the name by remove all the suffixes  found in the name 
     for end in suff:                                     
         try : 
-            namelist.remove(rad+''.join(end[cpt:]))  #remove suffixes that are in the name
+            namelist.remove(rad+''.join(end[cpt:]))  
         except ValueError: 
             return ''.join(suff[0][:cpt])
+    # if there is no suffixe left it means that the name coutain all the version of the gene so name can be reduced
     if len(namelist)==0: 
         return ''.join(suff[0][:cpt])
     else: 
@@ -75,10 +77,12 @@ def reduce_suf(rad,suff,cpt):
             return suff[0][cpt-1]
         return '/'.join([reduce_suf(rad+g,suffdic[g],cpt+1) for g in suffdic])
     
-
+#Apply the suffixe reduction to a name 
 def combine(name): 
+    #If there is no suffixe do nothing
     if len(name.split(' '))==1 : 
         return name[0].upper()+name[1:].lower()
+    #Else create a suffixe list in the tab format following numbers are together 
     suff=name.split(' ')[1].split('/')
     stab=[]
     for s  in suff :
@@ -88,12 +92,15 @@ def combine(name):
 
 #Function to get all the name given in a file 
 def getnames(file): 
+    tun=['Phmamm','Phfumi','Cisavi','Cirobu','Moocci','Moocul','Mooccu','Boschl','Boleac','Haaura','Harore','Coinfl','Stclav']
     with open(file) as f : 
         names=[]
         bigd={}
+        #Look at eahc line 
         for line in f.readlines(): 
             name=line.split('NameFound :')[1].split(';')[0]
             if not(name in names): 
+                #if a new name is found regroup in a dic all the tunicate genes with this name , by species 
                 names.append(name)
                 littled={}
                 for t in tun : 
@@ -106,25 +113,30 @@ def getnames(file):
     return bigd
 
 
-
+#add .{a-z} and apply the reduction for all names given in eahc file of the Named directory 
 def ABC(dir):
     alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+    #Regroup all the named files 
     with open('Finalname.txt','w') as f , open('FusionNamedfile.txt','w') as fnf,open('Verylong.txt','w') as vl: 
         for file in os.listdir(dir): 
             with open(dir+file) as nf : 
                 for line in nf.readlines(): 
                     fnf.write(line)
         fnf.close()
+        #Consctruct the dictionnary of named given 
         bigd=getnames('FusionNamedfile.txt')
         for name in bigd: 
             #print(name)
+            #Apply the reduction 
             fname=combine(name)
+            #Check if the name is very long (more than 10 /)
             if len(fname.split('/'))>10:
                 for species in bigd[name]: 
                     for i in range(0,len(bigd[name][species])) : 
                         vl.write(bigd[name][species][i])
                         vl.write('\t')
                         vl.write(fname+'\n')
+            #add .{a-z} for gene model with the same name in the same species 
             else :
                 for species in bigd[name]: 
                     if len(bigd[name][species])>=2:
@@ -135,6 +147,7 @@ def ABC(dir):
                                 f.write(fname+'.'+str.lower(alphabet[int(i/len(alphabet))-1])+str(int(i-len(alphabet))%10+1)+'\n')
                             else :
                                 f.write(fname+'.'+str.lower(alphabet[i])+'\n')
+                    # just write the name found if there is only one gene model in the species with this named 
                     elif bigd[name][species]!=[]: 
                         f.write(bigd[name][species][0])
                         f.write('\t')
