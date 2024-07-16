@@ -37,8 +37,10 @@ Terminal will show an estimated time based on previous execution time, and ask i
 
 LEGROS_all.txt countains now all the relationships tunicates-vertebrates if your dataset and 
 
-Then the script will call reduceV2.py and Correctname.py, at the end Finalnamed coutain each
+Then the script will call reduceV2.py at the end of the execution of the file if there is some naming problem unresolved script will show a list of the name found for each cases 
+write - to skip the cases , -exit to skip all the following cases or the name wanted
 
+Once Correctname.py is executed the file Finalname countain each tunicate genes named with his name found 
 
 To get statistics in a file the script Stats.py can also be executed : 
 
