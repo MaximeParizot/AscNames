@@ -10,9 +10,7 @@ import argparse
 # Third is the Robison foulds distance between the Tree and a reference Tree who got the same leaf but ina  classic phylogeny, 
 # all tunicate together , all vertebrate together and both together far from the outgroup 
 
-
-#Bad trees are trees with some unresolved leaf so those leaf are juste remove and the score are computed
-#Very BAd trees are trees with unresolved nodes so score can't be computed
+### These start are advice to input a new distance between reference tree and observed tree
 
 #Reading arguments
 parser=argparse.ArgumentParser()
@@ -107,6 +105,8 @@ def calculate_rf_distance(tree1, tree2):
         normalized_rf = rf / max_rf
         return normalized_rf
 
+### define the new dist (tree1,tree2) that return the distance 
+
 #Compute Composite score 
 def calculate_composite_score(observed_tree, reference_tree, groups):
     monophyly_score = 0
@@ -127,7 +127,8 @@ def calculate_composite_score(observed_tree, reference_tree, groups):
 
     # Then compute the composite score which is the mean of those 3 score 
     composite_score = (monophyly_score + position_score + (1 - rf_distance)) / 3
-
+    ###add 1-new dist to the composite score and divide by one more than the current number 
+    ### add a return of the new dist to this return 
     return monophyly_score,position_score,1-rf_distance,composite_score
     #print(f"monophyly_score: {monophyly_score:.2f}")
     #print(f"position_score: {position_score:.2f}")
@@ -203,6 +204,7 @@ def analyze_tree(tree):
     tuniciers =['Phmamm','Phfumi','Cisavi','Cirobu','Moocci','Moocul','Mooccu','Boschl','Boleac','Haaura','Harore','Coinfl','Stclav']
     vertebres = ['Cmil','Lcha','Hsap','Mmus','Ggal','Psin']
     #Initialize scores and numbers a subtree scored in the tree , then return them 
+    ### add a 0 in the score list 
     scores = {'scores': [0,0,0,0], 'nbtrees': 0}
     process_tree(tree, tuniciers, vertebres, equino, scores)
     return scores['scores'], scores['nbtrees']
@@ -213,7 +215,7 @@ pstscoremoyen=0
 rfdistmoyen=0
 cpscoremoyen=0
 badtrees=0
-verybadtrees=0
+###add a global variable newdist mean 
 nm=0
 
 #Score all the Tree in a file 
@@ -229,6 +231,7 @@ with open(file) as f:
             pstscoremoyen+=scores[1]
             rfdistmoyen+=scores[2]
             cpscoremoyen+=scores[3]
+            ###add newdistmean+=scores[4]  (score[5] for the next and so one, make sure it correspond to the return of composite score function )
         except TreeError :
             badtrees+=1
     
@@ -238,4 +241,5 @@ print(f"Composite Score: {cpscoremoyen/nm:.4f}")
 print(f"Monophyly Score: {mnscoremoyen/nm:.4f}")
 print(f"Position Score: {pstscoremoyen/nm:.4f}")
 print(f"RF score: {rfdistmoyen/nm:.4f}")
+### add print(f"New dist mean: {newdistmean/nm:.4f}")
 print("Nb bad trees : "+str(badtrees)+'/'+str(nm+badtrees))
