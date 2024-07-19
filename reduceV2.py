@@ -455,11 +455,14 @@ def propose(nbcases):
                             print('\n')
                             print(str(bbb)+' of '+str(nbcases))
                             bbb+=1
+                            print('Exemple of gene model in this case : '+ascg)
                             print('Names found : ')
                             print(list(set(currentnames)))
                             #If it's a new case show the users all the names found and let him write the name he want 
                             name=input('Choose a name for the case upside (- to name later, -exit to name everything later):')
                             #if - enter go to next , if -exit enter stop the propositions 
+                            if name=='': 
+                                name='-'
                             if name=='-exit': 
                                 passall=True
                                 name='-'
@@ -474,7 +477,7 @@ def propose(nbcases):
                     current=ascg
                     currentnames=[]
                 if vertg.split('Name::')[1].split(';')[0]!='notFound\n' and vertg.split('Name::')[1].split(';')[0]!='':
-                    currentnames.append(vertg.split('Name::')[1].split(';')[0])
+                    currentnames.append(vertg.split('Name::')[1].split(';')[0]+' ('+vertg.split('|')[0]+')')
         #And still don't forget the last one 
         if passall : 
             name='-'

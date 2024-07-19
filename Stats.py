@@ -14,8 +14,8 @@ def grep(str,file):
 #Reading argument 
 parser=argparse.ArgumentParser()
 parser.add_argument("-f","--file",help="OrthologyRelationships file ",type=str,required=True)
-parser.add_argument("-show","--Stats",help="Stats to compute",type=str,required=False,default='all',choices=
-                    ['all','Nbtun','Nbtunbysp','Nbrel','Nbuniquerel','Nbnf','Nbdiffname','Nbcase'])
+parser.add_argument("-show","--Stats",help="Stats to compute",type=str,required=False,default='all')
+                    #,choices=['all','Nbtun','Nbtunbysp','Nbrel','Nbuniquerel','Nbnf','Nbdiffname','Nbcase'])
 parser.add_argument("-gr","--graph",help="Choose if you want to plot graphics or not",required=False,default='Y',choices=['Y','n'])
 
 args=parser.parse_args()
